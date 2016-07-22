@@ -156,6 +156,8 @@ module.exports = function(app) {
                 .then(function(fileInfo) {
                   delete $scope.fileUploads[fileName];
                   fileInfo.storage = $scope.component.storage;
+                  delete fileInfo.headers;
+                  delete fileInfo.config;
                   $scope.data[$scope.component.key].push(fileInfo);
                 })
                 .catch(function(message) {
