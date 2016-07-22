@@ -290,6 +290,10 @@ body > .ui-select-bootstrap.open {
   padding: 0;
 }
 
+.form-field-type-signature img {
+  width: 100%;
+}
+
 .datetime-picker-dropdown div > table .btn-default {
   border: 0;
   background-color: #fff;
@@ -388,6 +392,14 @@ input[type="password"][draggable="true"] {
 .form-field-type-radio .radio-inline input[type="radio"]
 .component-type-radio .radio-inline input[type="radio"] {
   margin-top: 4px;
+}
+
+/* FA-877 - Fix component widths in the data grid with prefix/sufix. */
+.input-group {
+  width: 100%;
+}
+.form-field-type-datagrid .input-group {
+  width: auto;
 }
 
 .form-field-type-datagrid .form-group {
