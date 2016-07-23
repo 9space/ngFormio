@@ -1,4 +1,4 @@
-/*! ng-formio v1.9.0 | https://npmcdn.com/ng-formio@1.9.0/LICENSE.txt */
+/*! ng-formio v2.0.0 | https://npmcdn.com/ng-formio@2.0.0/LICENSE.txt */
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 (function (process){
 // vim:ts=4:sts=4:sw=4:
@@ -59784,6 +59784,9 @@ module.exports = function(app) {
             })
               .then(function(fileInfo) {
                 delete $scope.fileUploads[fileName];
+                fileInfo.storage = $scope.component.storage;
+                delete fileInfo.headers;
+                delete fileInfo.config;
                 // Ensure that the file component is an array.
                 if (
                   !$scope.data[$scope.component.key] ||
@@ -61191,6 +61194,51 @@ module.exports = function() {
         var input = modelValue || viewValue;
         /*eslint-enable no-unused-vars */
         var custom = scope.component.validate.custom;
+
+        /** Special custom validation - TODO refactor required */
+        var vals = [];
+        var siblings = [];
+        var $ = angular.element;
+
+        if (!scope.$parent.$root.init) {
+           scope.$parent.$root.init = {};
+        }
+        if (custom === 'grid-row-not-blank') {
+          ele
+            .parents('.formio-data-grid-row')
+            .siblings()
+            //.find('.form-control[required="required"]')
+            .find('.form-control')
+            .each(function(a,b) {
+              if ($(b).val()) {
+                vals.push($(b).val());
+              }
+              var c = $(b).scope().component;
+              if (!scope.$parent.$root.init[c.key]) {
+                scope.$parent.$root.init[c.key] = angular.copy(c.validate);
+              }
+              siblings.push($(b).scope());
+          });
+          if (!scope.$parent.$root.init[scope.component.key]) {
+            scope.$parent.$root.init[scope.component.key] = angular.copy(scope.component.validate);
+          }
+          if (vals.length || ele.val()) {
+              siblings.forEach(function(sibling, i) {
+                  var c = siblings[i].component;
+                  siblings[i].component.validate.required = scope.$parent.$root.init[c.key].required;
+              });
+              scope.component.validate.required = scope.$parent.$root.init[scope.component.key].required;
+          }
+          else {
+              siblings.forEach(function(sibling, i) {
+                  siblings[i].component.validate.required = false;
+              });
+              scope.component.validate.required = false;
+          }
+          return true;
+        }
+        /** END Special custom validation */
+
         custom = custom.replace(/({{\s+(.*)\s+}})/, function(match, $1, $2) {
           return scope.data[$2];
         });
